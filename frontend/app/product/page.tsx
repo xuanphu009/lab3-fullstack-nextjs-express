@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
 
 type Product = {
@@ -14,8 +15,12 @@ export default function ProductsPage() {
   const [price, setPrice] = useState('');
 
   const fetchProducts = async () => {
-    const res = await api.get('/api/products');
-    setProducts(res.data);
+    try {
+      const res = await api.get('/api/products');
+      setProducts(res.data);
+    } catch {
+      toast.error('Không thể kết nối server!');
+    }
   };
 
   useEffect(() => {
@@ -24,14 +29,18 @@ export default function ProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await api.post('/api/products', { name, price });
-      setName('');
-      setPrice('');
-      fetchProducts();
-    } catch (err: any) {
-      console.error(err.response?.data?.error);
-    }
+    toast.promise(
+      api.post('/api/products', { name, price }).then(() => {
+        setName('');
+        setPrice('');
+        fetchProducts();
+      }),
+      {
+        loading: 'Đang lưu...',
+        success: 'Thêm sản phẩm thành công!',
+        error: (err) => err.response?.data?.error || 'Có lỗi xảy ra!',
+      }
+    );
   };
 
   return (
@@ -44,6 +53,7 @@ export default function ProductsPage() {
           onChange={e => setName(e.target.value)}
           placeholder="Tên sản phẩm"
           className="border rounded px-3 py-2"
+          required
         />
         <input
           value={price}
@@ -51,6 +61,7 @@ export default function ProductsPage() {
           placeholder="Giá"
           type="number"
           className="border rounded px-3 py-2"
+          required
         />
         <button
           type="submit"
