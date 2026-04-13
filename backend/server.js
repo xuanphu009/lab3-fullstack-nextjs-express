@@ -42,6 +42,6 @@ app.delete('/api/products/:id', (req, res) => {
   res.json({ message: 'Đã xoá thành công' });
 });
 
-app.listen(5000, () =>
-  console.log('Backend chạy tại port :5000')
+app.listen(4000, () =>
+  console.log('Backend chạy tại port :4000')
 );
