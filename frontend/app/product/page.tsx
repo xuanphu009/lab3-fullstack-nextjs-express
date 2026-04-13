@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import api from '@/lib/api';
 
 type Product = {
   id: number;
@@ -13,9 +14,8 @@ export default function ProductsPage() {
   const [price, setPrice] = useState('');
 
   const fetchProducts = async () => {
-    const res = await fetch('http://localhost:5000/api/products');
-    const data = await res.json();
-    setProducts(data);
+    const res = await api.get('/api/products');
+    setProducts(res.data);
   };
 
   useEffect(() => {
@@ -24,15 +24,13 @@ export default function ProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, price }),
-    });
-    if (res.ok) {
+    try {
+      await api.post('/api/products', { name, price });
       setName('');
       setPrice('');
       fetchProducts();
+    } catch (err: any) {
+      console.error(err.response?.data?.error);
     }
   };
 
