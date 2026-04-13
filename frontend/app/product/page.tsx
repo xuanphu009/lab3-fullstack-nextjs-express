@@ -43,6 +43,19 @@ export default function ProductsPage() {
     );
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm('Bạn chắc chắn muốn xoá?')) return;
+    try {
+      await api.delete(`/api/products/${id}`);
+      // Optimistic update: cập nhật state ngay, không cần gọi lại API
+      setProducts(prev => prev.filter(p => p.id !== id));
+      toast.success('Đã xoá sản phẩm', { icon: '🗑️' });
+    } catch {
+      toast.error('Xoá thất bại, thử lại!');
+      fetchProducts(); // rollback
+    }
+  };
+
   return (
     <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Quản lý sản phẩm</h1>
@@ -73,8 +86,19 @@ export default function ProductsPage() {
 
       <div className="flex flex-col gap-2">
         {products.map(p => (
-          <div key={p.id} className="border rounded p-3">
-            {p.name} — {p.price.toLocaleString()}đ
+          <div
+            key={p.id}
+            className="flex justify-between items-center p-3 border rounded mb-2"
+          >
+            <span>
+              {p.name} — {p.price.toLocaleString()}đ
+            </span>
+            <button
+              onClick={() => handleDelete(p.id)}
+              className="text-red-500 hover:text-red-700 text-sm font-medium"
+            >
+              Xoá
+            </button>
           </div>
         ))}
       </div>
